@@ -1,106 +1,109 @@
+import csv, os
 
+def load_contacts():
+    if not os.path.exists('contact.csv'):
+        return []
+    with open('contact.csv', 'r') as file:
+            f = csv.DictReader(file)
+            return [row for row in f]
 
-#manger system
-def add_contact(first_name,last_name,email,contact_no,adress):
-    contacts= load_contact()
-    contact={
-        'first_name': first_name,
-        'last_name': last_name,
-        'email': email,
-        'contact_no':contact_no,
-        'adress':adress    
+def save(contactbook):
+    with open('contact.csv', 'w', newline='') as file:
+        fields = ['name', 'email', 'contact_no', 'address']
+        writer = csv.DictWriter(file, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(contactbook)
+
+def add_contact(name, email, contact_no, address):
+    contactbook = load_contacts()
+
+    for contact in contactbook:
+        if contact['contact_no'] == contact_no:
+            print("Contact already found!")
+            return
+
+    new_contact = {
+        'name'      : name,
+        'email'     : email,
+        'contact_no': contact_no,
+        'address'   : address
     }
-    contacts.append(contact)
-    save_contact(contacts)
-    
-def view_contact():
-    contacts = load_contact()
-    for i, contact in enumerate(contacts,start= 1):
-        print(f"{i}First_name:{contact['first_name']}, Last_name:{contact['last_name']},Email:{contact['email']},Contact_no:{contact['contact-no']},Adress:{contact['adress']}")
-        
+    contactbook.append(new_contact)
+    save(contactbook)
 
+def remove_contact(contact_no):
+    contactbook = load_contacts()
+    delete_contact = None
+    for contact in contactbook:
+        if contact['contact_no'] == contact_no:
+            delete_contact = contact
 
-def remove_contact(index):
-    contacts = load_contact()
-    if 0<index<= len(contacts):
-        del contacts[index-1]
-        save_contact(contacts)
+    if delete_contact:
+        contactbook.remove(delete_contact)
+        save(contactbook)
+        print("Contact deleted")
     else:
-        print("Invalid index")
-        
+        print("Contact Not found")
 
-def search_contact(query):
-    contacts=load_contact()
-    result=[]
-    for i, contact in contacts:
-        if query.lower() in contact['first_name'] or query.lower() in contact ['last_name'] or query in contact ['contact_no']:
+def search_contact(name):
+    contactbook = load_contacts()
+    result = []
+
+    for contact in contactbook:
+        if contact['name'] == name:
             result.append(contact)
-    print(f"{i}First_name:{contact['first_name']}, Last_name:{contact['last_name']},Email:{contact['email']},Contact_no:{contact['contact_no']},Adress:{contact['adress']}")
-        
 
-#storage and memory
-""""
-def save_contact(contacts):
-    with open('contact.json','w')as file:
-        json.dump(contacts, file,indent=4)
-def load_contact():
-    with open('contact.json','r') as file:
-        return json.load(file)
-"""
-import json
-import os
-import csv  # Import csv module for CSV file handling
-
-# Function to create the JSON file if it doesn't exist
-def create_json_file():
-    if not os.path.exists('contact.json'):
-        with open('contact.json', 'w') as file:
-            json.dump([], file)  # Create an empty JSON array
-
-# Function to create the CSV file if it doesn't exist
-def create_csv_file():
-    if not os.path.exists('contacts.csv'):
-        with open('contacts.csv', 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['first_name', 'last_name', 'email', 'contact_no', 'adress'])  # Write header
-
-
-#home page
-while True:
-    print("Welcome to contact book mangement system")
-    print(" 1. Add Contact")
-    print(" 2. View Contact")
-    print(" 3. Remove Contact")
-    print( " 4. Search Contact")
-    print( " 5. Exit ")
-    
-    choice= input("Enter your choice: ")
-    if choice =="1":
-        first_name=input("Enter your first name: ")
-        last_name= input("Enter your last name: ")
-        email= input("Enter email Adress: ")
-        contact_no= input("Enter Contact Number: ")
-        adress= input("Enter your adress: ")
-        add_contact(first_name,last_name,email,contact_no,adress)
-        print("Task added successfully!")
-        
-    elif choice=="2":
-        view_contact()
-    elif choice== "3":
-        index= int(input("Enter the contact index to remove:"))
-        remove_contact(index)
-        print("Contact removed sucessfully!")
-    elif choice== "4":
-        query=input("Enter the search query: ")
-        print("\nSearch Results: ")
-        search_contact(query)
-        
-    elif choice == "5":
-        print("Exiting....")
-        break;
-    
+    if result:
+        print("## Search Results:\n")
+        for i, contact in enumerate(result, start=1):
+            print(
+                f"{i}. Name: {contact['name']}, Email: {contact['email']}, "
+                f"Contact No: {contact['contact_no']}, Address: {contact['address']}"
+            )
     else:
-        print("Invalid choice. Please try again.")
-        
-        
+        print("Name not found")
 
+def view_contact():
+    contactbook = load_contacts()
+    print("####Contact lists####\n")
+    for i, contact in enumerate(contactbook, start=1):
+        print(
+            f"{i}. Name: {contact['name']}, Email: {contact['email']}, "
+            f"Contact No: {contact['contact_no']}, Address: {contact['address']}"
+        )
+
+
+def menu():
+    while True:
+        print("\n\n Welcome to  CONTACT MANAGEMENT APP ")
+        print(" 1. Add Contact: ")
+        print(" 2. View Contact: ")
+        print(" 3. Remove Contact: ")
+        print(" 4. Search Contact: ")
+        print(" 5. Exit")
+
+        choice = input("Enter your choice: ").strip()
+        if choice == "1":
+            name = input("Enter name : ")
+            email = input("Enter email: ")
+            contact_no = input("Enter contact number: ")
+            address = input("Enter your address: ")
+            add_contact(name, email, contact_no, address)
+            print("Task added Successfully!")
+
+        elif choice == "2":
+            view_contact()
+        elif choice == "3":
+            name = input("Enter number: ")
+            remove_contact(name)
+        elif choice == "4":
+            query = input("Enter the search query: ")
+            search_contact(query)
+        elif choice == "5":
+            print("Exiting the program. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    menu()
